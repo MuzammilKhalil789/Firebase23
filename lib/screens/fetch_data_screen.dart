@@ -11,6 +11,12 @@ class FetchDataScreen extends StatefulWidget {
 }
 
 class _FetchDataScreenState extends State<FetchDataScreen> {
+  //-=> namong a varibale / naming a function-=> name should be menaing full
+  //-=> mathod/function
+  //_showUpdateDialog-=> show update dialog
+  //-=> oop-=> private and public
+  //-=> private :-> only this class can access-> in dart private data memebrs or member funcution can be represneted with under score _ 
+  // public:-> anyone cann acess
   void _showEditDialog(BuildContext context, DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     final nameController = TextEditingController(text: data['name']?.toString() ?? '');
@@ -103,8 +109,11 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
               onPressed: () async {
                 Navigator.pop(context);
                 try {
-                  await FirebaseFirestore.instance
-                      .collection('studentData')
+                  // await FirebaseFirestore.instance
+                  //     .collection('studentData')
+                  //     .doc(doc.id)
+                    await FirebaseFirestore.instance
+                      .collection(FirebaseAuth.instance.currentUser!.uid)
                       .doc(doc.id)
                       .update({
                     'name': nameController.text.trim(),
@@ -174,10 +183,15 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
       ),
       backgroundColor: Colors.white,
       body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection(FirebaseAuth.instance.currentUser!.uid).snapshots(),
 
-        stream: FirebaseFirestore.instance.collection('studentData').where(
-            'userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid
-        ).snapshots(),
+//         stream: FirebaseFirestore.instance.collection('studentData').// colelction-=> docs
+//         where(
+// // in each documents, we have a field name userId, which is equal to the current user's uid.(user which aready have logedin)
+// // So we are filtering the documents based on the current user's uid.
+
+//             'userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid
+//         ).snapshots(),
         builder: (context, snapshots) {
           if (snapshots.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -190,8 +204,8 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
           }
           return ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            itemCount: snapshots.data!.docs.length,
-            itemBuilder: (context, index) {
+            itemCount: snapshots.data!.docs.length,// listname.lenght//-> colelction(docs=10)> length =10
+            itemBuilder: (context, index) {// index 0-9-=> 10indexes
               return Card(
                 elevation: 3,
                 margin: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
@@ -288,7 +302,9 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                                     onPressed: ()async {
                                       Navigator.pop(context);
                                       // Firebase delete
-                                      await FirebaseFirestore.instance.collection('studentData').doc(snapshots.data!.docs[index].id).delete();
+//                                      await FirebaseFirestore.instance.collection('studentData').doc(snapshots.data!.docs[index].id).delete();
+ await FirebaseFirestore.instance.collection(FirebaseAuth.instance.currentUser!.uid).
+ doc(snapshots.data!.docs[index].id).delete();
 
                                       // SnackBar message
                                       ScaffoldMessenger.of(context).showSnackBar(

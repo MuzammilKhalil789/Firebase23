@@ -166,7 +166,8 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
                       final nav = Navigator.of(context);
                       try {
                         String userId=await FirebaseAuth.instance.currentUser!.uid;
-                        await FirebaseFirestore.instance.collection('studentData').add({
+//                        await FirebaseFirestore.instance.collection('studentData').add({
+                        await FirebaseFirestore.instance.collection(FirebaseAuth.instance.currentUser!.uid).add({
                           'name': _nameController.text.trim(),
                           'fname': _fnameController.text.trim(),
                           'age': _ageController.text.trim(),
