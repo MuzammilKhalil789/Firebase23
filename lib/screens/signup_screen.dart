@@ -201,53 +201,65 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 28),
 
                     // Sign Up Custom Button (Container/InkWell - Not ElevatedButton)
-                    isLoading?CircularProgressIndicator():
-                    TextButton(onPressed: ()async{
-                      isLoading=true;
-                      setState(() {
-
-                      });
-                      await FirebaseAuth.instance.signInWithEmailAndPassword(
-                          email: _emailController.text.trim(),
-                          password: _passwordController.text).
-                      then((onValue){
-                        isLoading=false;
-                        setState(() {
-
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Sign IN Succesfully'),
-                              backgroundColor: Colors.green,
-                              behavior: SnackBarBehavior.floating,
-                            )
-                        );
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
-                      }).
-                      onError((error,handleError){
-                        isLoading=false;
-                        setState(() {
-
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(error.toString()),
-                              backgroundColor: Colors.redAccent,
-                              behavior: SnackBarBehavior.floating,
-
-                            )
-                        );
-                      });
-                    }, child: Container(
-                      height: 50,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade700,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text('Sign IN',style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),),
-                    ),),
+                    isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : TextButton(
+                            onPressed: () async {
+                              if (!_formKey.currentState!.validate()) return;
+                              setState(() {
+                                isLoading = true;
+                              });
+                              await FirebaseAuth.instance
+                                  .createUserWithEmailAndPassword(
+                                      email: _emailController.text.trim(),
+                                      password: _passwordController.text)
+                                  .then((onValue) {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Account Created Successfully'),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const LoginScreen()),
+                                );
+                              }).onError((error, handleError) {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(error.toString()),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              });
+                            },
+                            child: Container(
+                              height: 50,
+                              width: 120,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade700,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Text(
+                                'Sign Up',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
                     const SizedBox(height: 24),
 
                     // Back to Login Navigation

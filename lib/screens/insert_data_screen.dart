@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase/screens/fetch_data_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class InsertDataScreen extends StatefulWidget {
@@ -32,9 +34,15 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Insert Data'),
+
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
+        actions: [
+          IconButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>FetchDataScreen()));
+          }, icon: Icon(Icons.arrow_forward))
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -157,12 +165,14 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
                       final scaffoldMessenger = ScaffoldMessenger.of(context);
                       final nav = Navigator.of(context);
                       try {
+                        String userId=await FirebaseAuth.instance.currentUser!.uid;
                         await FirebaseFirestore.instance.collection('studentData').add({
                           'name': _nameController.text.trim(),
                           'fname': _fnameController.text.trim(),
                           'age': _ageController.text.trim(),
                           'email': _emailController.text.trim(),
                           'timestamp': FieldValue.serverTimestamp(),
+                          'userId':userId,
                         });
                         if (!mounted) return;
                         setState(() {

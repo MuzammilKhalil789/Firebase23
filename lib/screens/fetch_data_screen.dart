@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase/screens/insert_data_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class FetchDataScreen extends StatefulWidget {
@@ -173,7 +174,10 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
       ),
       backgroundColor: Colors.white,
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('studentData').snapshots(),
+
+        stream: FirebaseFirestore.instance.collection('studentData').where(
+            'userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid
+        ).snapshots(),
         builder: (context, snapshots) {
           if (snapshots.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -281,13 +285,10 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                                   ),
                                   // YES Button
                                   TextButton(
-                                    onPressed: () {
+                                    onPressed: ()async {
                                       Navigator.pop(context);
                                       // Firebase delete
-                                      FirebaseFirestore.instance
-                                          .collection('studentData')
-                                          .doc(snapshots.data!.docs[index].id)
-                                          .delete();
+                                      await FirebaseFirestore.instance.collection('studentData').doc(snapshots.data!.docs[index].id).delete();
 
                                       // SnackBar message
                                       ScaffoldMessenger.of(context).showSnackBar(
