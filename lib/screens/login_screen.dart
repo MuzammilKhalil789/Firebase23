@@ -1,10 +1,11 @@
 import 'package:firebase/screens/insert_data_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../widgets/custom_text.dart';
-import '../widgets/custom_text_field.dart';
-import 'fetch_data_screen.dart';
 import 'signup_screen.dart';
+
+import '../Components/Textfield.dart';
+import '../Components/custom_text.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -259,3 +260,5 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+

@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase/screens/insert_data_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../Components/Textfield.dart';
+import 'insert_data_screen.dart';
 
 class FetchDataScreen extends StatefulWidget {
   const FetchDataScreen({super.key});
@@ -11,22 +12,22 @@ class FetchDataScreen extends StatefulWidget {
 }
 
 class _FetchDataScreenState extends State<FetchDataScreen> {
-  //-=> namong a varibale / naming a function-=> name should be menaing full
-  //-=> mathod/function
-  //_showUpdateDialog-=> show update dialog
-  //-=> oop-=> private and public
-  //-=> private :-> only this class can access-> in dart private data memebrs or member funcution can be represneted with under score _ 
-  // public:-> anyone cann acess
+  // Current user UID for user-specific collection
+  String get currentUserId => FirebaseAuth.instance.currentUser?.uid ?? '';
+
+  // ================= SHOW UPDATE DIALOG =================
   void _showEditDialog(BuildContext context, DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
+
     final nameController = TextEditingController(text: data['name']?.toString() ?? '');
     final fnameController = TextEditingController(text: data['fname']?.toString() ?? '');
     final ageController = TextEditingController(text: data['age']?.toString() ?? '');
     final emailController = TextEditingController(text: data['email']?.toString() ?? '');
+    final addressController = TextEditingController(text: data['address']?.toString() ?? '');
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
@@ -46,42 +47,37 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
+                const SizedBox(height: 8),
+                CustomTextField(
                   controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    prefixIcon: Icon(Icons.person),
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'Name',
+                  prefixIcon: Icons.person,
                 ),
                 const SizedBox(height: 12),
-                TextField(
+                CustomTextField(
                   controller: fnameController,
-                  decoration: const InputDecoration(
-                    labelText: "Father's Name",
-                    prefixIcon: Icon(Icons.person_outline),
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: "Father's Name",
+                  prefixIcon: Icons.person_outline,
                 ),
                 const SizedBox(height: 12),
-                TextField(
+                CustomTextField(
                   controller: ageController,
+                  labelText: 'Age',
+                  prefixIcon: Icons.calendar_today,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Age',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    border: OutlineInputBorder(),
-                  ),
                 ),
                 const SizedBox(height: 12),
-                TextField(
+                CustomTextField(
                   controller: emailController,
+                  labelText: 'Email',
+                  prefixIcon: Icons.email,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
-                  ),
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller: addressController,
+                  labelText: 'Address',
+                  prefixIcon: Icons.location_on_outlined,
                 ),
               ],
             ),
@@ -89,9 +85,7 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
           actions: [
             // Cancel Button
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(dialogContext),
               child: Container(
                 height: 40,
                 width: 80,
@@ -107,19 +101,17 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
             // Update Button
             TextButton(
               onPressed: () async {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 try {
-                  // await FirebaseFirestore.instance
-                  //     .collection('studentData')
-                  //     .doc(doc.id)
-                    await FirebaseFirestore.instance
-                      .collection(FirebaseAuth.instance.currentUser!.uid)
+                  await FirebaseFirestore.instance
+                      .collection(currentUserId)
                       .doc(doc.id)
                       .update({
                     'name': nameController.text.trim(),
                     'fname': fnameController.text.trim(),
                     'age': ageController.text.trim(),
                     'email': emailController.text.trim(),
+                    'address': addressController.text.trim(),
                   });
 
                   if (context.mounted) {
@@ -127,6 +119,7 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                       const SnackBar(
                         content: Text('Data updated successfully'),
                         backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
                       ),
                     );
                   }
@@ -136,6 +129,7 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                       SnackBar(
                         content: Text('Error updating data: $e'),
                         backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
                       ),
                     );
                   }
@@ -159,9 +153,110 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
     );
   }
 
+  // ================= SHOW DELETE CONFIRMATION DIALOG =================
+  void _showDeleteDialog(BuildContext context, String docId) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: const Center(
+            child: Text(
+              'Delete Data',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          content: const Text(
+            'Are you sure you want to delete this item?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            // No Button
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Container(
+                height: 40,
+                width: 80,
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Center(
+                  child: Text('No', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ),
+            // Yes Button
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  await FirebaseFirestore.instance
+                      .collection(currentUserId)
+                      .doc(docId)
+                      .delete();
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Data deleted successfully'),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error deleting data: $e'),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Container(
+                height: 40,
+                width: 80,
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Center(
+                  child: Text('Yes', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Fetch Data'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
@@ -169,58 +264,56 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => InsertDataScreen()),
+            MaterialPageRoute(builder: (context) => const InsertDataScreen()),
           );
         },
         icon: const Icon(Icons.add),
         label: const Text('Insert Data', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      appBar: AppBar(
-        title: Text('Fetch Data'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      backgroundColor: Colors.white,
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection(FirebaseAuth.instance.currentUser!.uid).snapshots(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection(currentUserId).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-//         stream: FirebaseFirestore.instance.collection('studentData').// colelction-=> docs
-//         where(
-// // in each documents, we have a field name userId, which is equal to the current user's uid.(user which aready have logedin)
-// // So we are filtering the documents based on the current user's uid.
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-//             'userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid
-//         ).snapshots(),
-        builder: (context, snapshots) {
-          if (snapshots.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text(
+                'No Data Found',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            );
           }
-          if (snapshots.hasError) {
-            return Center(child: Text('Error:${snapshots.error}'));
-          }
-          if (!snapshots.hasData || snapshots.data!.docs.isEmpty) {
-            return Center(child: Text('No Data Found'));
-          }
+
+          final docs = snapshot.data!.docs;
+
           return ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            itemCount: snapshots.data!.docs.length,// listname.lenght//-> colelction(docs=10)> length =10
-            itemBuilder: (context, index) {// index 0-9-=> 10indexes
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final doc = docs[index];
+              final data = doc.data() as Map<String, dynamic>? ?? {};
+
               return Card(
                 elevation: 3,
-                margin: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: CircleAvatar(
                     backgroundColor: Colors.blue.shade100,
-                    child: Icon(Icons.person, color: Colors.blue),
+                    child: const Icon(Icons.person, color: Colors.blue),
                   ),
                   title: Text(
-                    snapshots.data!.docs[index]['name'],
-                    style: TextStyle(
+                    data['name']?.toString() ?? 'No Name',
+                    style: const TextStyle(
                       color: Colors.black,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -229,116 +322,33 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 2),
-                      Text("Father:${snapshots.data!.docs[index]['fname']}"),
-                      SizedBox(height: 2),
-                      Text("Age:${snapshots.data!.docs[index]['age']}"),
-                      SizedBox(height: 2),
-                      Text("Email:${snapshots.data!.docs[index]['email']}"),
+                      const SizedBox(height: 4),
+                      Text("Father: ${data['fname'] ?? ''}"),
+                      const SizedBox(height: 2),
+                      Text("Age: ${data['age'] ?? ''}"),
+                      const SizedBox(height: 2),
+                      Text("Email: ${data['email'] ?? ''}"),
+                      if (data['address'] != null && data['address'].toString().isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text("Address: ${data['address']}"),
+                      ],
                     ],
                   ),
-
-                  // ================= EDIT & DELETE BUTTONS =================
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Edit Button
                       IconButton(
                         icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () {
-                          _showEditDialog(context, snapshots.data!.docs[index]);
-                        },
+                        onPressed: () => _showEditDialog(context, doc),
                       ),
                       // Delete Button
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: const Center(
-                                  child: Text(
-                                    'Delete Data',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ),
-                                content: const Text(
-                                  'Are You sure you want to delete this item',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                backgroundColor: Colors.white,
-                                actions: [
-                                  // NO Button
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Container(
-                                      height: 40,
-                                      width: 80,
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          'No',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // YES Button
-                                  TextButton(
-                                    onPressed: ()async {
-                                      Navigator.pop(context);
-                                      // Firebase delete
-//                                      await FirebaseFirestore.instance.collection('studentData').doc(snapshots.data!.docs[index].id).delete();
- await FirebaseFirestore.instance.collection(FirebaseAuth.instance.currentUser!.uid).
- doc(snapshots.data!.docs[index].id).delete();
-
-                                      // SnackBar message
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Data deleted Successfully'),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
-                                    },
-                                    child: Container(
-                                      height: 40,
-                                      width: 70,
-                                      decoration: BoxDecoration(
-                                        color: Colors.green,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          'Yes',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
+                        onPressed: () => _showDeleteDialog(context, doc.id),
                       ),
                     ],
                   ),
-
-
                 ),
               );
             },

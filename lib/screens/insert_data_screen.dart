@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase/screens/fetch_data_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../Components/Textfield.dart';
+// Reusable TextField Import
 
 class InsertDataScreen extends StatefulWidget {
   const InsertDataScreen({super.key});
@@ -17,7 +19,7 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
   final _ageController = TextEditingController();
   final _emailController = TextEditingController();
   final _addresscontroller = TextEditingController();
-  bool isLoading=false;
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -28,20 +30,26 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
     _addresscontroller.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Insert Data'),
-
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
         actions: [
-          IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>FetchDataScreen()));
-          }, icon: Icon(Icons.arrow_forward))
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FetchDataScreen()),
+              );
+            },
+            icon: const Icon(Icons.arrow_forward),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -52,15 +60,12 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
             children: [
               const SizedBox(height: 10),
 
-
-              TextFormField(
+              // Name Field (Reusable)
+              CustomTextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'Enter your name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
+                labelText: 'Name',
+                hintText: 'Enter your name',
+                prefixIcon: Icons.person,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter name';
@@ -70,15 +75,12 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
               ),
               const SizedBox(height: 16),
 
-
-              TextFormField(
+              // Father's Name Field (Reusable)
+              CustomTextField(
                 controller: _fnameController,
-                decoration: const InputDecoration(
-                  labelText: "Father's Name",
-                  hintText: "Enter father's name",
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
+                labelText: "Father's Name",
+                hintText: "Enter father's name",
+                prefixIcon: Icons.person_outline,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return "Please enter father's name";
@@ -88,16 +90,13 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
               ),
               const SizedBox(height: 16),
 
-
-              TextFormField(
+              // Age Field (Reusable)
+              CustomTextField(
                 controller: _ageController,
+                labelText: 'Age',
+                hintText: 'Enter your age',
+                prefixIcon: Icons.calendar_today,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Age',
-                  hintText: 'Enter your age',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.calendar_today),
-                ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter age';
@@ -107,16 +106,13 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
               ),
               const SizedBox(height: 16),
 
-
-              TextFormField(
+              // Email Field (Reusable)
+              CustomTextField(
                 controller: _emailController,
+                labelText: 'Email',
+                hintText: 'Enter your email',
+                prefixIcon: Icons.email,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'Enter your email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
-                ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter email';
@@ -126,16 +122,12 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
               ),
               const SizedBox(height: 16),
 
-
-              TextFormField(
+              // Address Field (Reusable)
+              CustomTextField(
                 controller: _addresscontroller,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Address',
-                  hintText: 'Enter your address',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
-                ),
+                labelText: 'Address',
+                hintText: 'Enter your address',
+                prefixIcon: Icons.location_on_outlined,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter address';
@@ -144,6 +136,8 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
                 },
               ),
               const SizedBox(height: 24),
+
+              // Submit Button
               isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : SizedBox(
@@ -165,24 +159,30 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
                       final scaffoldMessenger = ScaffoldMessenger.of(context);
                       final nav = Navigator.of(context);
                       try {
-                        String userId=await FirebaseAuth.instance.currentUser!.uid;
-//                        await FirebaseFirestore.instance.collection('studentData').add({
-                        await FirebaseFirestore.instance.collection(FirebaseAuth.instance.currentUser!.uid).add({
+                        String userId = FirebaseAuth.instance.currentUser!.uid;
+
+                        await FirebaseFirestore.instance
+                            .collection(userId)
+                            .add({
                           'name': _nameController.text.trim(),
                           'fname': _fnameController.text.trim(),
                           'age': _ageController.text.trim(),
                           'email': _emailController.text.trim(),
+                          'address': _addresscontroller.text.trim(),
                           'timestamp': FieldValue.serverTimestamp(),
-                          'userId':userId,
+                          'userId': userId,
                         });
+
                         if (!mounted) return;
                         setState(() {
                           isLoading = false;
                         });
+
                         _nameController.clear();
                         _fnameController.clear();
                         _ageController.clear();
                         _emailController.clear();
+                        _addresscontroller.clear();
 
                         scaffoldMessenger.showSnackBar(
                           const SnackBar(
@@ -211,7 +211,11 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
                   },
                   child: const Text(
                     'Insert Data',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
