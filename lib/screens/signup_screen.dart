@@ -214,21 +214,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       email: _emailController.text.trim(),
                                       password: _passwordController.text)
                                   .then((onValue) {
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Account Created Successfully'),
-                                    backgroundColor: Colors.green,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const LoginScreen()),
-                                );
+                               await FirebaseFireStore.instance.cpllection('users').
+                               doc(onValue.user!.uid).set({
+                                  'name': _nameController.text.trim(),
+                                  'email': _emailController.text.trim(),
+                                  'uid': onValue.user!.uid,
+                                  'createdAt': FieldValue.serverTimestamp(),
+                                }).then().onError();
+                               
+                                // setState(() {
+                                //   isLoading = false;
+                                // });
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   const SnackBar(
+                                //     content: Text('Account Created Successfully'),
+                                //     backgroundColor: Colors.green,
+                                //     behavior: SnackBarBehavior.floating,
+                                //   ),
+                                // );
+                                // Navigator.pushReplacement(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //       builder: (context) => const LoginScreen()),
+                                // );
                               }).onError((error, handleError) {
                                 setState(() {
                                   isLoading = false;
