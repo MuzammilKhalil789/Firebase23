@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_text.dart';
@@ -15,17 +16,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  bool isLoading=false;
+  bool isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -41,17 +44,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0A0F1D),
-              Color(0xFF131D36),
-              Color(0xFF0A0F1D),
-            ],
+            colors: [Color(0xFF0A0F1D), Color(0xFF131D36), Color(0xFF0A0F1D)],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 26.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 26.0,
+                vertical: 20.0,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -70,7 +72,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                              color: const Color(
+                                0xFF38BDF8,
+                              ).withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -127,9 +131,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         if (value == null || value.trim().isEmpty) {
                           return 'Please enter your email';
                         }
-                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                        final emailRegex = RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        );
                         if (!emailRegex.hasMatch(value.trim())) {
                           return 'Please enter a valid email address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Phone Field with Validator
+                    CustomTextField(
+                      controller: _phoneController,
+                      hintText: 'Enter your phone number',
+                      labelText: 'Phone Number',
+                      prefixIcon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your phone number';
                         }
                         return null;
                       },
@@ -211,36 +233,64 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               });
                               await FirebaseAuth.instance
                                   .createUserWithEmailAndPassword(
-                                      email: _emailController.text.trim(),
-                                      password: _passwordController.text)
-                                  .then((onValue) {
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Account Created Successfully'),
-                                    backgroundColor: Colors.green,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const LoginScreen()),
-                                );
-                              }).onError((error, handleError) {
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(error.toString()),
-                                    backgroundColor: Colors.redAccent,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              });
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text,
+                                  )
+                                  .then((onValue) async {
+                                    // 1. User create hone ke baad Firestore collection 'users' mein data save karna
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(onValue.user!.uid)
+                                        .set({
+                                          'uid': onValue.user!.uid,
+                                          'name': _nameController.text.trim(),
+                                          'email': _emailController.text.trim(),
+                                          'phone': _phoneController.text.trim(),
+                                          'gender': '',
+                                          'age': '',
+                                          'profile_image': '',
+                                          'created_at':
+                                              FieldValue.serverTimestamp(),
+                                          'updated_at':
+                                              FieldValue.serverTimestamp(),
+                                          'suspend_At': null,
+                                          'deleted_at': null,
+                                        });
+
+                                    if (!mounted) return;
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Account Created Successfully',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginScreen(),
+                                      ),
+                                    );
+                                  })
+                                  .onError((error, handleError) {
+                                    if (!mounted) return;
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(error.toString()),
+                                        backgroundColor: Colors.redAccent,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  });
                             },
                             child: Container(
                               height: 50,
