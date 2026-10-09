@@ -233,6 +233,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               });
                               await FirebaseAuth.instance
                                   .createUserWithEmailAndPassword(
+<<<<<<< HEAD
                                     email: _emailController.text.trim(),
                                     password: _passwordController.text,
                                   )
@@ -291,6 +292,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       ),
                                     );
                                   });
+=======
+                                      email: _emailController.text.trim(),
+                                      password: _passwordController.text)
+                                  .then((onValue) {
+                               await FirebaseFireStore.instance.cpllection('users').
+                               doc(onValue.user!.uid).set({
+                                  'name': _nameController.text.trim(),
+                                  'email': _emailController.text.trim(),
+                                  'uid': onValue.user!.uid,
+                                  'createdAt': FieldValue.serverTimestamp(),
+                                }).then().onError();
+                               
+                                // setState(() {
+                                //   isLoading = false;
+                                // });
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   const SnackBar(
+                                //     content: Text('Account Created Successfully'),
+                                //     backgroundColor: Colors.green,
+                                //     behavior: SnackBarBehavior.floating,
+                                //   ),
+                                // );
+                                // Navigator.pushReplacement(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //       builder: (context) => const LoginScreen()),
+                                // );
+                              }).onError((error, handleError) {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(error.toString()),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              });
+>>>>>>> f1771644757de307ac7cd97c85940e5d990f647f
                             },
                             child: Container(
                               height: 50,
