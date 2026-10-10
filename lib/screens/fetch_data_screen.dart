@@ -246,13 +246,48 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
       },
     );
   }
+String user_name='';
+String user_email='';
+String user_phone='';
+String user_gender='';
+String user_image='';
+void _getUserProfile()async{
+  dataLoading=true;
+  setState(() {});
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+  if(userId!=null){
+    final userData = await FirebaseFirestore.instance.
+    collection('users').doc(userId).get();
+   // if(userDoc.exists){
+      setState(() {
 
+        user_name = userData.data()?['name'] ?? '';
+        user_email = userData.data()?['email'] ?? '';
+        user_phone = userData.data()?['phone'] ?? '';
+        user_gender = userData.data()?['gender'] ?? '';
+        user_image = userData.data()?['profile_image'] ?? '';
+        dataLoading=false;
+      });
+    //}
+  }
+
+}
+initState() {
+  @override
+    super.initState();
+    _getUserProfile();
+  }
+String dataLoading=false
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Fetch Data'),
+        leading:CircleAvatar(
+          backgroundImage: NetworkImage(user_image),
+        )
+        
+        title: Text('Welcome, $user_name', style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -270,7 +305,8 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
         icon: const Icon(Icons.add),
         label: const Text('Insert Data', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: StreamBuilder<QuerySnapshot>(
+      body: 
+      StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection(currentUserId).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

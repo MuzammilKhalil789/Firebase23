@@ -239,6 +239,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   )
                                   .then((onValue) async {
                                     // 1. User create hone ke baad Firestore collection 'users' mein data save karna
+                                   // user0d=1122(doc)-=>all fields 
                                     await FirebaseFirestore.instance
                                         .collection('users')
                                         .doc(onValue.user!.uid)
@@ -256,6 +257,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               FieldValue.serverTimestamp(),
                                           'suspend_At': null,
                                           'deleted_at': null,
+                                          'profile_sttas': 'active',
                                         });
 
                                     if (!mounted) return;
