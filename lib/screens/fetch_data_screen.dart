@@ -277,6 +277,16 @@ initState() {
     super.initState();
     _getUserProfile();
   }
+/*
+task create-->
+sub collections-=> as like tree
+
+-> main root--> sub branches
+-> main collection(users)-=>sub collection(collection name)-=> data
+-> users->docs->sub collection->docs->data
+
+*/
+
 String dataLoading=false
   @override
   Widget build(BuildContext context) {
