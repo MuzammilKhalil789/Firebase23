@@ -153,7 +153,9 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                     Navigator.pop(dialogContext);
                     try {
                       await FirebaseFirestore.instance
-                          .collection(currentUserId)
+                          .collection('users')
+                          .doc(currentUserId)
+                          .collection('tasks')
                           .doc(doc.id)
                           .update({
                         'name': nameController.text.trim(),
@@ -257,7 +259,9 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                 Navigator.pop(dialogContext);
                 try {
                   await FirebaseFirestore.instance
-                      .collection(currentUserId)
+                      .collection('users')
+                      .doc(currentUserId)
+                      .collection('tasks')
                       .doc(docId)
                       .delete();
 
@@ -328,21 +332,12 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
     super.initState();
     _getUserProfile();
   }
-<<<<<<< HEAD
-/*
-task create-->
-sub collections-=> as like tree
 
--> main root--> sub branches
--> main collection(users)-=>sub collection(collection name)-=> data
--> users->docs->sub collection->docs->data
-
-*/
-
-String dataLoading=false
-=======
-
->>>>>>> db26518ae54f6af975a09c3b8f0afcf9114cce67
+  /*
+  Task: Sub collections (Tree structure)
+  -> main root --> sub branches
+  -> main collection(users) -> doc(userId) -> sub collection('tasks') -> docs -> data
+  */
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -376,7 +371,11 @@ String dataLoading=false
         label: const Text('Insert Data', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(currentUserId).snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUserId)
+            .collection('tasks')
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
