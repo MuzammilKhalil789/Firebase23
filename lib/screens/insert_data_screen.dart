@@ -17,6 +17,8 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
   final _fnameController = TextEditingController();
   final _ageController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  String? _selectedGender;
   final _addressControler = TextEditingController();
   bool isLoading = false;
 
@@ -26,6 +28,7 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
     _fnameController.dispose();
     _ageController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _addressControler.dispose();
     super.dispose();
   }
@@ -115,6 +118,57 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
               ),
               SizedBox(height: 16),
               CustomTextField(
+                controller: _phoneController,
+                labelText: 'Phone',
+                hintText: 'Enter phone number',
+                prefixIcon: Icons.phone,
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter phone number';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedGender,
+                decoration: InputDecoration(
+                  labelText: 'Gender',
+                  prefixIcon: const Icon(Icons.person_pin),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+                hint: const Text('Select Gender'),
+                items: const [
+                  DropdownMenuItem(value: 'Male', child: Text('Male')),
+                  DropdownMenuItem(value: 'Female', child: Text('Female')),
+                  DropdownMenuItem(value: 'Other', child: Text('Other')),
+                ],
+                onChanged: (val) {
+                  setState(() {
+                    _selectedGender = val;
+                  });
+                },
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return 'Please select gender';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              CustomTextField(
                 controller: _addressControler,
                 labelText: 'Address',
                 hintText: 'Enter your address',
@@ -157,6 +211,9 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
                               'name': _nameController.text.trim(),
                               'fname': _fnameController.text.trim(),
                               'age': _ageController.text.trim(),
+                              'email': _emailController.text.trim(),
+                              'phone': _phoneController.text.trim(),
+                              'gender': _selectedGender ?? '',
                               'address': _addressControler.text.trim(),
                               'timestamp': FieldValue.serverTimestamp(),
                               'userId': userId,
@@ -169,8 +226,12 @@ class _InsertDataScreenState extends State<InsertDataScreen> {
                         _nameController.clear();
                         _fnameController.clear();
                         _ageController.clear();
-                        _addressControler.clear();
                         _emailController.clear();
+                        _phoneController.clear();
+                        _addressControler.clear();
+                        setState(() {
+                          _selectedGender = null;
+                        });
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
                             content: Text('Data Inserted Successfully'),
