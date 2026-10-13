@@ -1,3 +1,4 @@
+import 'package:firebase/screens/insert_data_screen.dart';
 import 'package:firebase/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,7 +34,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      home: const SplashScreen(),
+      home://InsertDataScreen()
+       const SplashScreen(),
     );
   }
 }

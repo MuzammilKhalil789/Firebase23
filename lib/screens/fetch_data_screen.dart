@@ -15,6 +15,13 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
   // Current user UID for user-specific collection
   String get currentUserId => FirebaseAuth.instance.currentUser?.uid ?? '';
 
+  String user_name = '';
+  String user_email = '';
+  String user_phone = '';
+  String user_gender = '';
+  String user_image = '';
+  bool dataLoading = false; // Fix 1: String se change kar ke bool kiya
+
   // ================= SHOW UPDATE DIALOG =================
   void _showEditDialog(BuildContext context, DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
@@ -23,96 +30,140 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
     final fnameController = TextEditingController(text: data['fname']?.toString() ?? '');
     final ageController = TextEditingController(text: data['age']?.toString() ?? '');
     final emailController = TextEditingController(text: data['email']?.toString() ?? '');
+    final phoneController = TextEditingController(text: data['phone']?.toString() ?? '');
+    String? selectedGender = data['gender']?.toString().isNotEmpty == true ? data['gender']?.toString() : null;
     final addressController = TextEditingController(text: data['address']?.toString() ?? '');
 
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: const Center(
-            child: Text(
-              'Update Data',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
               ),
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                CustomTextField(
-                  controller: nameController,
-                  labelText: 'Name',
-                  prefixIcon: Icons.person,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: fnameController,
-                  labelText: "Father's Name",
-                  prefixIcon: Icons.person_outline,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: ageController,
-                  labelText: 'Age',
-                  prefixIcon: Icons.calendar_today,
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: emailController,
-                  labelText: 'Email',
-                  prefixIcon: Icons.email,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: addressController,
-                  labelText: 'Address',
-                  prefixIcon: Icons.location_on_outlined,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            // Cancel Button
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Container(
-                height: 40,
-                width: 80,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Text('Cancel', style: TextStyle(color: Colors.white)),
+              title: const Center(
+                child: Text(
+                  'Update Data',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
               ),
-            ),
-            // Update Button
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-                try {
-                  await FirebaseFirestore.instance
-                      .collection(currentUserId)
-                      .doc(doc.id)
-                      .update({
-                    'name': nameController.text.trim(),
-                    'fname': fnameController.text.trim(),
-                    'age': ageController.text.trim(),
-                    'email': emailController.text.trim(),
-                    'address': addressController.text.trim(),
-                  });
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    CustomTextField(
+                      controller: nameController,
+                      labelText: 'Name',
+                      prefixIcon: Icons.person,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: fnameController,
+                      labelText: "Father's Name",
+                      prefixIcon: Icons.person_outline,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: ageController,
+                      labelText: 'Age',
+                      prefixIcon: Icons.calendar_today,
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: emailController,
+                      labelText: 'Email',
+                      prefixIcon: Icons.email,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: phoneController,
+                      labelText: 'Phone',
+                      prefixIcon: Icons.phone,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: selectedGender,
+                      decoration: InputDecoration(
+                        labelText: 'Gender',
+                        prefixIcon: const Icon(Icons.person_pin),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade400),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      ),
+                      hint: const Text('Select Gender'),
+                      items: const [
+                        DropdownMenuItem(value: 'Male', child: Text('Male')),
+                        DropdownMenuItem(value: 'Female', child: Text('Female')),
+                        DropdownMenuItem(value: 'Other', child: Text('Other')),
+                      ],
+                      onChanged: (val) {
+                        setDialogState(() {
+                          selectedGender = val;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: addressController,
+                      labelText: 'Address',
+                      prefixIcon: Icons.location_on_outlined,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                // Cancel Button
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Container(
+                    height: 40,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Center(
+                      child: Text('Cancel', style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ),
+                // Update Button
+                TextButton(
+                  onPressed: () async {
+                    Navigator.pop(dialogContext);
+                    try {
+                      await FirebaseFirestore.instance
+                          .collection(currentUserId)
+                          .doc(doc.id)
+                          .update({
+                        'name': nameController.text.trim(),
+                        'fname': fnameController.text.trim(),
+                        'age': ageController.text.trim(),
+                        'email': emailController.text.trim(),
+                        'phone': phoneController.text.trim(),
+                        'gender': selectedGender ?? '',
+                        'address': addressController.text.trim(),
+                      });
 
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -151,7 +202,9 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
         );
       },
     );
-  }
+  },
+);
+}
 
   // ================= SHOW DELETE CONFIRMATION DIALOG =================
   void _showDeleteDialog(BuildContext context, String docId) {
@@ -246,47 +299,50 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
       },
     );
   }
-String user_name='';
-String user_email='';
-String user_phone='';
-String user_gender='';
-String user_image='';
-void _getUserProfile()async{
-  dataLoading=true;
-  setState(() {});
-  final userId = FirebaseAuth.instance.currentUser?.uid;
-  if(userId!=null){
-    final userData = await FirebaseFirestore.instance.
-    collection('users').doc(userId).get();
-   // if(userDoc.exists){
-      setState(() {
 
-        user_name = userData.data()?['name'] ?? '';
-        user_email = userData.data()?['email'] ?? '';
-        user_phone = userData.data()?['phone'] ?? '';
-        user_gender = userData.data()?['gender'] ?? '';
-        user_image = userData.data()?['profile_image'] ?? '';
-        dataLoading=false;
-      });
-    //}
+  void _getUserProfile() async {
+    dataLoading = true;
+    setState(() {});
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      final userData = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      if (mounted) {
+        setState(() {
+          user_name = userData.data()?['name'] ?? '';
+          user_email = userData.data()?['email'] ?? '';
+          user_phone = userData.data()?['phone'] ?? '';
+          user_gender = userData.data()?['gender'] ?? '';
+          user_image = userData.data()?['profile_image'] ?? '';
+          dataLoading = false;
+        });
+      }
+    }
   }
 
-}
-initState() {
+  // Fix 2: initState ki proper syntax aur @override
   @override
+  void initState() {
     super.initState();
     _getUserProfile();
   }
-String dataLoading=false
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading:CircleAvatar(
-          backgroundImage: NetworkImage(user_image),
-        )
-        
+        // Fix 3: user_image empty hone par crash hone se bachaya
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            backgroundColor: Colors.white24,
+            backgroundImage: user_image.isNotEmpty ? NetworkImage(user_image) : null,
+            child: user_image.isEmpty ? const Icon(Icons.person, color: Colors.white) : null,
+          ),
+        ),
         title: Text('Welcome, $user_name', style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
@@ -305,8 +361,7 @@ String dataLoading=false
         icon: const Icon(Icons.add),
         label: const Text('Insert Data', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: 
-      StreamBuilder<QuerySnapshot>(
+      body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection(currentUserId).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -364,6 +419,14 @@ String dataLoading=false
                       Text("Age: ${data['age'] ?? ''}"),
                       const SizedBox(height: 2),
                       Text("Email: ${data['email'] ?? ''}"),
+                      if (data['phone'] != null && data['phone'].toString().isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text("Phone: ${data['phone']}"),
+                      ],
+                      if (data['gender'] != null && data['gender'].toString().isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text("Gender: ${data['gender']}"),
+                      ],
                       if (data['address'] != null && data['address'].toString().isNotEmpty) ...[
                         const SizedBox(height: 2),
                         Text("Address: ${data['address']}"),
