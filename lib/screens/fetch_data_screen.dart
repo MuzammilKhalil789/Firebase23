@@ -33,6 +33,7 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
     final phoneController = TextEditingController(text: data['phone']?.toString() ?? '');
     String? selectedGender = data['gender']?.toString().isNotEmpty == true ? data['gender']?.toString() : null;
     final addressController = TextEditingController(text: data['address']?.toString() ?? '');
+    final statusCOntroller=data['status'];
 
     showDialog(
       context: context,
@@ -158,13 +159,15 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                           .collection('tasks')
                           .doc(doc.id)
                           .update({
-                        'name': nameController.text.trim(),
-                        'fname': fnameController.text.trim(),
-                        'age': ageController.text.trim(),
-                        'email': emailController.text.trim(),
-                        'phone': phoneController.text.trim(),
-                        'gender': selectedGender ?? '',
-                        'address': addressController.text.trim(),
+                            'status':'complete',
+                            'updated_at': FieldValue.serverTimestamp(),
+                       // 'name': nameController.text.trim(),
+                        // 'fname': fnameController.text.trim(),
+                        // 'age': ageController.text.trim(),
+                        // 'email': emailController.text.trim(),
+                        // 'phone': phoneController.text.trim(),
+                        // 'gender': selectedGender ?? '',
+                        // 'address': addressController.text.trim(),
                       });
 
                   if (context.mounted) {
@@ -416,34 +419,42 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                     child: const Icon(Icons.person, color: Colors.blue),
                   ),
                   title: Text(
-                    data['name']?.toString() ?? 'No Name',
+                   data['title']?.toString() ?? 'No Title',
+
+                   // data['name']?.toString() ?? 'No Name',
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  leading: data['status'] == 'incomplete'
+                      ?const Icon(Icons.pending_actions, color: Colors.orange):
+                      
+                       const Icon(Icons.check_circle, color: Colors.green)
+                   ,
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 4),
-                      Text("Father: ${data['fname'] ?? ''}"),
-                      const SizedBox(height: 2),
-                      Text("Age: ${data['age'] ?? ''}"),
-                      const SizedBox(height: 2),
-                      Text("Email: ${data['email'] ?? ''}"),
-                      if (data['phone'] != null && data['phone'].toString().isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text("Phone: ${data['phone']}"),
-                      ],
-                      if (data['gender'] != null && data['gender'].toString().isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text("Gender: ${data['gender']}"),
-                      ],
-                      if (data['address'] != null && data['address'].toString().isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text("Address: ${data['address']}"),
-                      ],
+                     Text('subtitle: ${data['subtitle']?.toString() ?? 'No Subtitle'}'),  
+                     // Text("Father: ${data['fname'] ?? ''}"),
+                      // const SizedBox(height: 2),
+                      // Text("Age: ${data['age'] ?? ''}"),
+                      // const SizedBox(height: 2),
+                      // Text("Email: ${data['email'] ?? ''}"),
+                      // if (data['phone'] != null && data['phone'].toString().isNotEmpty) ...[
+                      //   const SizedBox(height: 2),
+                      //   Text("Phone: ${data['phone']}"),
+                      // ],
+                      // if (data['gender'] != null && data['gender'].toString().isNotEmpty) ...[
+                      //   const SizedBox(height: 2),
+                      //   Text("Gender: ${data['gender']}"),
+                      // ],
+                      // if (data['address'] != null && data['address'].toString().isNotEmpty) ...[
+                      //   const SizedBox(height: 2),
+                      //   Text("Address: ${data['address']}"),
+                     // ],
                     ],
                   ),
                   trailing: Row(
@@ -455,10 +466,10 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                         onPressed: () => _showEditDialog(context, doc),
                       ),
                       // Delete Button
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _showDeleteDialog(context, doc.id),
-                      ),
+                      // IconButton(
+                      //   icon: const Icon(Icons.delete, color: Colors.red),
+                      //   onPressed: () => _showDeleteDialog(context, doc.id),
+                      // ),
                     ],
                   ),
                 ),
