@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Components/Textfield.dart';
-import 'insert_data_screen.dart';
+import 'login_screen.dart';
 
 class FetchDataScreen extends StatefulWidget {
   const FetchDataScreen({super.key});
@@ -12,15 +12,12 @@ class FetchDataScreen extends StatefulWidget {
 }
 
 class _FetchDataScreenState extends State<FetchDataScreen> {
-  // Current user UID for user-specific collection
+  // Current user UID for subcollection tree
   String get currentUserId => FirebaseAuth.instance.currentUser?.uid ?? '';
 
   String user_name = '';
-  String user_email = '';
-  String user_phone = '';
-  String user_gender = '';
   String user_image = '';
-  bool dataLoading = false; // Fix 1: String se change kar ke bool kiya
+  bool dataLoading = false;
 
   // ================= SHOW UPDATE DIALOG =================
   void _showEditDialog(BuildContext context, DocumentSnapshot doc) {
@@ -33,7 +30,6 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
     final phoneController = TextEditingController(text: data['phone']?.toString() ?? '');
     String? selectedGender = data['gender']?.toString().isNotEmpty == true ? data['gender']?.toString() : null;
     final addressController = TextEditingController(text: data['address']?.toString() ?? '');
-    final statusCOntroller=data['status'];
 
     showDialog(
       context: context,
@@ -148,68 +144,68 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                     ),
                   ),
                 ),
-                // Update Button
+                // Update Button in Subcollection
                 TextButton(
                   onPressed: () async {
                     Navigator.pop(dialogContext);
                     try {
+                      // Subcollection update: users -> doc(currentUserId) -> collection('tasks') -> doc(doc.id)
                       await FirebaseFirestore.instance
                           .collection('users')
                           .doc(currentUserId)
                           .collection('tasks')
                           .doc(doc.id)
                           .update({
-                            'status':'complete',
-                            'updated_at': FieldValue.serverTimestamp(),
-                       // 'name': nameController.text.trim(),
-                        // 'fname': fnameController.text.trim(),
-                        // 'age': ageController.text.trim(),
-                        // 'email': emailController.text.trim(),
-                        // 'phone': phoneController.text.trim(),
-                        // 'gender': selectedGender ?? '',
-                        // 'address': addressController.text.trim(),
+                        'name': nameController.text.trim(),
+                        'fname': fnameController.text.trim(),
+                        'age': ageController.text.trim(),
+                        'email': emailController.text.trim(),
+                        'phone': phoneController.text.trim(),
+                        'gender': selectedGender ?? '',
+                        'address': addressController.text.trim(),
+                        'updated_at': FieldValue.serverTimestamp(),
                       });
 
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Data updated successfully'),
-                        backgroundColor: Colors.green,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error updating data: $e'),
-                        backgroundColor: Colors.red,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                }
-              },
-              child: Container(
-                height: 40,
-                width: 80,
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(10),
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Data updated successfully in subcollection'),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error updating data: $e'),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Center(
+                      child: Text('Update', style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
                 ),
-                child: const Center(
-                  child: Text('Update', style: TextStyle(color: Colors.white)),
-                ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );
-  },
-);
-}
+  }
 
   // ================= SHOW DELETE CONFIRMATION DIALOG =================
   void _showDeleteDialog(BuildContext context, String docId) {
@@ -232,7 +228,7 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
             ),
           ),
           content: const Text(
-            'Are you sure you want to delete this item?',
+            'Are you sure you want to delete this item from subcollection?',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.black87,
@@ -256,7 +252,7 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                 ),
               ),
             ),
-            // Yes Button
+            // Yes Button: Subcollection delete
             TextButton(
               onPressed: () async {
                 Navigator.pop(dialogContext);
@@ -271,7 +267,7 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Data deleted successfully'),
+                        content: Text('Data deleted successfully from subcollection'),
                         backgroundColor: Colors.green,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -319,9 +315,6 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
       if (mounted) {
         setState(() {
           user_name = userData.data()?['name'] ?? '';
-          user_email = userData.data()?['email'] ?? '';
-          user_phone = userData.data()?['phone'] ?? '';
-          user_gender = userData.data()?['gender'] ?? '';
           user_image = userData.data()?['profile_image'] ?? '';
           dataLoading = false;
         });
@@ -329,7 +322,6 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
     }
   }
 
-  // Fix 2: initState ki proper syntax aur @override
   @override
   void initState() {
     super.initState();
@@ -344,9 +336,8 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        // Fix 3: user_image empty hone par crash hone se bachaya
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
@@ -355,25 +346,31 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
             child: user_image.isEmpty ? const Icon(Icons.person, color: Colors.white) : null,
           ),
         ),
-        title: Text('Welcome, $user_name', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          user_name.isNotEmpty ? 'Welcome, $user_name' : 'Subcollection Data',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (context.mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              }
+            },
+          ),
+        ],
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const InsertDataScreen()),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Insert Data', style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
       body: StreamBuilder<QuerySnapshot>(
+        // Tree Structure: main collection(users) -> doc(currentUserId) -> sub collection('tasks') -> snapshots
         stream: FirebaseFirestore.instance
             .collection('users')
             .doc(currentUserId)
@@ -391,7 +388,7 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Text(
-                'No Data Found',
+                'No Data Found in Subcollection',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             );
@@ -413,49 +410,48 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   leading: CircleAvatar(
+                    radius: 24,
                     backgroundColor: Colors.blue.shade100,
-                    child: const Icon(Icons.person, color: Colors.blue),
+                    child: Text(
+                      (data['name'] != null && data['name'].toString().isNotEmpty)
+                          ? data['name'].toString()[0].toUpperCase()
+                          : 'U',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
                   ),
                   title: Text(
-                   data['title']?.toString() ?? 'No Title',
-
-                   // data['name']?.toString() ?? 'No Name',
+                    data['name']?.toString() ?? 'No Name',
                     style: const TextStyle(
                       color: Colors.black,
-                      fontSize: 16,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  leading: data['status'] == 'incomplete'
-                      ?const Icon(Icons.pending_actions, color: Colors.orange):
-                      
-                       const Icon(Icons.check_circle, color: Colors.green)
-                   ,
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                     Text('subtitle: ${data['subtitle']?.toString() ?? 'No Subtitle'}'),  
-                     // Text("Father: ${data['fname'] ?? ''}"),
-                      // const SizedBox(height: 2),
-                      // Text("Age: ${data['age'] ?? ''}"),
-                      // const SizedBox(height: 2),
-                      // Text("Email: ${data['email'] ?? ''}"),
-                      // if (data['phone'] != null && data['phone'].toString().isNotEmpty) ...[
-                      //   const SizedBox(height: 2),
-                      //   Text("Phone: ${data['phone']}"),
-                      // ],
-                      // if (data['gender'] != null && data['gender'].toString().isNotEmpty) ...[
-                      //   const SizedBox(height: 2),
-                      //   Text("Gender: ${data['gender']}"),
-                      // ],
-                      // if (data['address'] != null && data['address'].toString().isNotEmpty) ...[
-                      //   const SizedBox(height: 2),
-                      //   Text("Address: ${data['address']}"),
-                     // ],
-                    ],
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (data['fname'] != null && data['fname'].toString().isNotEmpty)
+                          Text("Father: ${data['fname']}", style: const TextStyle(fontSize: 13)),
+                        if (data['age'] != null && data['age'].toString().isNotEmpty)
+                          Text("Age: ${data['age']}", style: const TextStyle(fontSize: 13)),
+                        if (data['email'] != null && data['email'].toString().isNotEmpty)
+                          Text("Email: ${data['email']}", style: const TextStyle(fontSize: 13)),
+                        if (data['phone'] != null && data['phone'].toString().isNotEmpty)
+                          Text("Phone: ${data['phone']}", style: const TextStyle(fontSize: 13)),
+                        if (data['gender'] != null && data['gender'].toString().isNotEmpty)
+                          Text("Gender: ${data['gender']}", style: const TextStyle(fontSize: 13)),
+                        if (data['address'] != null && data['address'].toString().isNotEmpty)
+                          Text("Address: ${data['address']}", style: const TextStyle(fontSize: 13)),
+                      ],
+                    ),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -466,10 +462,10 @@ class _FetchDataScreenState extends State<FetchDataScreen> {
                         onPressed: () => _showEditDialog(context, doc),
                       ),
                       // Delete Button
-                      // IconButton(
-                      //   icon: const Icon(Icons.delete, color: Colors.red),
-                      //   onPressed: () => _showDeleteDialog(context, doc.id),
-                      // ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _showDeleteDialog(context, doc.id),
+                      ),
                     ],
                   ),
                 ),

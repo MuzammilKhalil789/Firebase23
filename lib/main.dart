@@ -1,4 +1,3 @@
-import 'package:firebase/screens/insert_data_screen.dart';
 import 'package:firebase/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

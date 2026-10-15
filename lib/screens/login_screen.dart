@@ -1,4 +1,4 @@
-import 'package:firebase/screens/insert_data_screen.dart';
+import 'fetch_data_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'signup_screen.dart';
@@ -191,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       behavior: SnackBarBehavior.floating,
                     )
                   );
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>InsertDataScreen()));
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const FetchDataScreen()));
                 }).
                 onError((error,handleError){
                   isLoading=false;

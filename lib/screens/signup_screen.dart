@@ -14,12 +14,18 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  // Controllers
   final _nameController = TextEditingController();
+  final _fnameController = TextEditingController();
+  final _ageController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  String? _selectedGender;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool isLoading = false;
@@ -27,8 +33,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _fnameController.dispose();
+    _ageController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _addressController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -72,9 +81,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(
-                                0xFF38BDF8,
-                              ).withValues(alpha: 0.3),
+                              color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -103,9 +110,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       color: Colors.white.withValues(alpha: 0.6),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 26),
 
-                    // Full Name Field with Validator
+                    // 1. Full Name
                     CustomTextField(
                       controller: _nameController,
                       hintText: 'Enter your full name',
@@ -120,7 +127,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Email Field with Validator
+                    // 2. Father Name
+                    CustomTextField(
+                      controller: _fnameController,
+                      hintText: "Enter father's name",
+                      labelText: "Father's Name",
+                      prefixIcon: Icons.person_outline,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "Please enter father's name";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 3. Age
+                    CustomTextField(
+                      controller: _ageController,
+                      hintText: 'Enter your age',
+                      labelText: 'Age',
+                      prefixIcon: Icons.calendar_today_outlined,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your age';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 4. Email Address
                     CustomTextField(
                       controller: _emailController,
                       hintText: 'Enter your email',
@@ -142,7 +180,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Phone Field with Validator
+                    // 5. Phone Number
                     CustomTextField(
                       controller: _phoneController,
                       hintText: 'Enter your phone number',
@@ -158,7 +196,68 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Password Field with Validator
+                    // 6. Gender Dropdown
+                    DropdownButtonFormField<String>(
+                      value: _selectedGender,
+                      dropdownColor: const Color(0xFF131D36),
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      decoration: InputDecoration(
+                        labelText: 'Gender',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        hintText: 'Select Gender',
+                        hintStyle: const TextStyle(color: Colors.white38),
+                        prefixIcon: const Icon(Icons.person_pin_outlined, color: Colors.white70),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFF38BDF8), width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'Male', child: Text('Male')),
+                        DropdownMenuItem(value: 'Female', child: Text('Female')),
+                        DropdownMenuItem(value: 'Other', child: Text('Other')),
+                      ],
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedGender = val;
+                        });
+                      },
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Please select gender';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 7. Address
+                    CustomTextField(
+                      controller: _addressController,
+                      hintText: 'Enter your address',
+                      labelText: 'Address',
+                      prefixIcon: Icons.location_on_outlined,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 8. Password
                     CustomTextField(
                       controller: _passwordController,
                       hintText: 'Enter your password',
@@ -190,7 +289,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Confirm Password Field with Validator
+                    // 9. Confirm Password
                     CustomTextField(
                       controller: _confirmPasswordController,
                       hintText: 'Confirm your password',
@@ -231,72 +330,90 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               setState(() {
                                 isLoading = true;
                               });
-                              await FirebaseAuth.instance
-                                  .createUserWithEmailAndPassword(
-                                    email: _emailController.text.trim(),
-                                    password: _passwordController.text,
-                                  )
-                                  .then((onValue) async {
-                                    // 1. User create hone ke baad Firestore collection 'users' mein data save karna
-                                   // user0d=1122(doc)-=>all fields 
-                                    await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(onValue.user!.uid)
-                                        .set({
-                                          'uid': onValue.user!.uid,
-                                          'name': _nameController.text.trim(),
-                                          'email': _emailController.text.trim(),
-                                          'phone': _phoneController.text.trim(),
-                                          'gender': '',
-                                          'age': '',
-                                          'profile_image': '',
-                                          'created_at':
-                                              FieldValue.serverTimestamp(),
-                                          'updated_at':
-                                              FieldValue.serverTimestamp(),
-                                          'suspend_At': null,
-                                          'deleted_at': null,
-                                          'profile_sttas': 'active',
-                                        });
 
-                                    if (!mounted) return;
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Account Created Successfully',
-                                        ),
-                                        backgroundColor: Colors.green,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const LoginScreen(),
-                                      ),
-                                    );
-                                  })
-                                  .onError((error, handleError) {
-                                    if (!mounted) return;
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(error.toString()),
-                                        backgroundColor: Colors.redAccent,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  });
+                              try {
+                                // 1. Create Firebase Auth user
+                                final userCredential = await FirebaseAuth.instance
+                                    .createUserWithEmailAndPassword(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text,
+                                );
+
+                                final uid = userCredential.user!.uid;
+                                final docId = DateTime.now().millisecondsSinceEpoch.toString();
+
+                                // 2. Main collection: users -> doc(uid)
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(uid)
+                                    .set({
+                                  'uid': uid,
+                                  'name': _nameController.text.trim(),
+                                  'email': _emailController.text.trim(),
+                                  'phone': _phoneController.text.trim(),
+                                  'profile_image': '',
+                                  'created_at': FieldValue.serverTimestamp(),
+                                  'profile_status': 'active',
+                                });
+
+                                // 3. Subcollection (Tree structure):
+                                // main collection(users) -> doc(uid) -> sub collection('tasks') -> doc(docId) -> data
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(uid)
+                                    .collection('tasks')
+                                    .doc(docId)
+                                    .set({
+                                  'docid': docId,
+                                  'userId': uid,
+                                  'name': _nameController.text.trim(),
+                                  'fname': _fnameController.text.trim(),
+                                  'age': _ageController.text.trim(),
+                                  'email': _emailController.text.trim(),
+                                  'phone': _phoneController.text.trim(),
+                                  'gender': _selectedGender ?? '',
+                                  'address': _addressController.text.trim(),
+                                  'created_at': FieldValue.serverTimestamp(),
+                                  'updated_at': FieldValue.serverTimestamp(),
+                                });
+
+                                if (!mounted) return;
+                                setState(() {
+                                  isLoading = false;
+                                });
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Account Created & Data Inserted in Subcollection!'),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const LoginScreen(),
+                                  ),
+                                );
+                              } catch (error) {
+                                if (!mounted) return;
+                                setState(() {
+                                  isLoading = false;
+                                });
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(error.toString()),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
                             },
                             child: Container(
                               height: 50,
-                              width: 120,
+                              width: 140,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: Colors.blue.shade700,
