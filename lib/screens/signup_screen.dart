@@ -337,34 +337,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     .createUserWithEmailAndPassword(
                                   email: _emailController.text.trim(),
                                   password: _passwordController.text,
-                                );
-
-                                final uid = userCredential.user!.uid;
+                                ).
+                                then((value)
+                                {  
+                                   final uid = userCredential.user!.uid;
                                 final docId = DateTime.now().millisecondsSinceEpoch.toString();
 
-                                // 2. Main collection: users -> doc(uid)
-                                await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(uid)
-                                    .set({
-                                  'uid': uid,
-                                  'name': _nameController.text.trim(),
-                                  'email': _emailController.text.trim(),
-                                  'phone': _phoneController.text.trim(),
-                                  'profile_image': '',
-                                  'created_at': FieldValue.serverTimestamp(),
-                                  'profile_status': 'active',
-                                });
+                                // // 2. Main collection: users -> doc(uid)
+                                // await FirebaseFirestore.instance
+                                //     .collection('users')
+                                //     .doc(uid)
+                                //     .set({
+                                //   'uid': uid,
+                                //   'name': _nameController.text.trim(),
+                                //   'email': _emailController.text.trim(),
+                                //   'phone': _phoneController.text.trim(),
+                                //   'profile_image': '',
+                                //   'created_at': FieldValue.serverTimestamp(),
+                                //   'profile_status': 'active',
+                                // });
 
-                                // 3. Subcollection (Tree structure):
+                                // 2. Subcollection (Tree structure):
                                 // main collection(users) -> doc(uid) -> sub collection('tasks') -> doc(docId) -> data
                                 await FirebaseFirestore.instance
                                     .collection('users')
                                     .doc(uid)
-                                    .collection('tasks')
-                                    .doc(docId)
+                                    // .collection('tasks')
+                                    // .doc(docId)
                                     .set({
-                                  'docid': docId,
+                                //  'docid': docId,
                                   'userId': uid,
                                   'name': _nameController.text.trim(),
                                   'fname': _fnameController.text.trim(),
@@ -396,6 +397,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     builder: (context) => const LoginScreen(),
                                   ),
                                 );
+
+                                });
+
+                             
                               } catch (error) {
                                 if (!mounted) return;
                                 setState(() {
