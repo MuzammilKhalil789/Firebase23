@@ -171,53 +171,73 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-              isLoading?CircularProgressIndicator():
-              TextButton(onPressed: ()async{
-                isLoading=true;
-                setState(() {
+                    isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : Center(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (!_formKey.currentState!.validate()) return;
+                                setState(() {
+                                  isLoading = true;
+                                });
 
-                });
-                await FirebaseAuth.instance.signInWithEmailAndPassword(
-                    email: _emailController.text.trim(),
-                    password: _passwordController.text).
-                then((onValue){
-                  isLoading=false;
-                  setState(() {
+                                try {
+                                  await FirebaseAuth.instance.signInWithEmailAndPassword(
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text,
+                                  );
 
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Login Succesfully'),
-                    backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                    )
-                  );
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const FetchDataScreen()));
-                }).
-                onError((error,handleError){
-                  isLoading=false;
-                  setState(() {
+                                  if (!mounted || !context.mounted) return;
+                                  setState(() {
+                                    isLoading = false;
+                                  });
 
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text(error.toString()),
-                     backgroundColor: Colors.redAccent,
-                     behavior: SnackBarBehavior.floating,
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Login Successful!'),
+                                      backgroundColor: Colors.green,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
 
-                   )
-                  );
-                });
-              }, child: Container(
-                height: 50,
-                width: 120,
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade700,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text('Login',style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),),
-              ),),
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const FetchDataScreen(),
+                                    ),
+                                  );
+                                } catch (error) {
+                                  if (!mounted || !context.mounted) return;
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(error.toString()),
+                                      backgroundColor: Colors.redAccent,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue.shade700,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(140, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                     const SizedBox(height: 28),
 
                     // Sign Up Navigation

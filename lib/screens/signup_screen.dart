@@ -198,7 +198,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                     // 6. Gender Dropdown
                     DropdownButtonFormField<String>(
-                      value: _selectedGender,
+                      initialValue: _selectedGender,
                       dropdownColor: const Color(0xFF131D36),
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       decoration: InputDecoration(
@@ -337,35 +337,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     .createUserWithEmailAndPassword(
                                   email: _emailController.text.trim(),
                                   password: _passwordController.text,
-                                ).
-                                then((value)
-                                {  
-                                   final uid = userCredential.user!.uid;
-                                final docId = DateTime.now().millisecondsSinceEpoch.toString();
+                                );
 
-                                // // 2. Main collection: users -> doc(uid)
-                                // await FirebaseFirestore.instance
-                                //     .collection('users')
-                                //     .doc(uid)
-                                //     .set({
-                                //   'uid': uid,
-                                //   'name': _nameController.text.trim(),
-                                //   'email': _emailController.text.trim(),
-                                //   'phone': _phoneController.text.trim(),
-                                //   'profile_image': '',
-                                //   'created_at': FieldValue.serverTimestamp(),
-                                //   'profile_status': 'active',
-                                // });
+                                final uid = userCredential.user!.uid;
 
-                                // 2. Subcollection (Tree structure):
-                                // main collection(users) -> doc(uid) -> sub collection('tasks') -> doc(docId) -> data
+                                // 2. Main collection: users -> doc(uid) (User Profile)
                                 await FirebaseFirestore.instance
                                     .collection('users')
                                     .doc(uid)
-                                    // .collection('tasks')
-                                    // .doc(docId)
                                     .set({
-                                //  'docid': docId,
                                   'userId': uid,
                                   'name': _nameController.text.trim(),
                                   'fname': _fnameController.text.trim(),
@@ -378,14 +358,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   'updated_at': FieldValue.serverTimestamp(),
                                 });
 
-                                if (!mounted) return;
+                                if (!mounted || !context.mounted) return;
                                 setState(() {
                                   isLoading = false;
                                 });
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Account Created & Data Inserted in Subcollection!'),
+                                    content: Text('Account Created & Profile Saved Successfully!'),
                                     backgroundColor: Colors.green,
                                     behavior: SnackBarBehavior.floating,
                                   ),
@@ -397,12 +377,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     builder: (context) => const LoginScreen(),
                                   ),
                                 );
-
+                              } on FirebaseAuthException catch (error) {
+                                if (!mounted || !context.mounted) return;
+                                setState(() {
+                                  isLoading = false;
                                 });
 
-                             
+                                String errorMessage;
+                                if (error.code == 'email-already-in-use') {
+                                  errorMessage = 'Yeh email pehle se registered hai! Login karein ya nayi email likhein.';
+                                } else if (error.code == 'weak-password') {
+                                  errorMessage = 'Password kam az kam 6 characters ka hona chahiye.';
+                                } else if (error.code == 'invalid-email') {
+                                  errorMessage = 'Email address theek nahi hai.';
+                                } else {
+                                  errorMessage = error.message ?? error.toString();
+                                }
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(errorMessage),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              } on FirebaseException catch (error) {
+                                if (!mounted || !context.mounted) return;
+                                setState(() {
+                                  isLoading = false;
+                                });
+
+                                String errorMessage;
+                                if (error.code == 'permission-denied') {
+                                  errorMessage = 'Firestore permission-denied! Firebase Console mein Rules check karein.';
+                                } else {
+                                  errorMessage = error.message ?? error.toString();
+                                }
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(errorMessage),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
                               } catch (error) {
-                                if (!mounted) return;
+                                if (!mounted || !context.mounted) return;
                                 setState(() {
                                   isLoading = false;
                                 });
